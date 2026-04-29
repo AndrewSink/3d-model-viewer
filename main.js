@@ -346,10 +346,9 @@ rotateGizmoButton.addEventListener("click", () => {
 screenshotButton.addEventListener("click", () => {
   renderer.render(scene, camera);
   const dataURL = renderer.domElement.toDataURL("image/png");
-  const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
   const a = document.createElement("a");
   a.href = dataURL;
-  a.download = `model-viewer-${ts}.png`;
+  a.download = "Model_Viewer_Screenshot.png";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
