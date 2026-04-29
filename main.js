@@ -142,18 +142,11 @@ function applyMaterialToModel(obj) {
   });
 }
 
-function frameModel(obj) {
-  const box = new THREE.Box3().setFromObject(obj);
-  if (box.isEmpty()) return;
+function frameModel(pivot) {
+  const size = pivot.userData?.size;
+  if (!size) return;
 
-  const size = new THREE.Vector3();
-  const center = new THREE.Vector3();
-  box.getSize(size);
-  box.getCenter(center);
-
-  obj.position.x -= center.x;
-  obj.position.y -= center.y;
-  obj.position.z -= box.min.z;
+  pivot.position.set(0, 0, size.z / 2);
 
   const maxDim = Math.max(size.x, size.y, size.z, 1);
   const fov = (camera.fov * Math.PI) / 180;
@@ -176,11 +169,23 @@ function setModel(obj) {
     currentModel = null;
   }
   applyMaterialToModel(obj);
-  scene.add(obj);
-  currentModel = obj;
-  frameModel(obj);
+
+  const box = new THREE.Box3().setFromObject(obj);
+  const size = new THREE.Vector3();
+  const center = new THREE.Vector3();
+  box.getSize(size);
+  box.getCenter(center);
+  obj.position.set(-center.x, -center.y, -center.z);
+
+  const pivot = new THREE.Group();
+  pivot.add(obj);
+  pivot.userData.size = size.clone();
+
+  scene.add(pivot);
+  currentModel = pivot;
+  frameModel(pivot);
   hint?.classList.add("hidden");
-  if (gizmoActive) transformControls.attach(obj);
+  if (gizmoActive) transformControls.attach(pivot);
 }
 
 function meshFromGeometry(geometry) {
