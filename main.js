@@ -62,6 +62,11 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
 controls.target.copy(DEFAULT_TARGET);
+controls.mouseButtons = {
+  LEFT: THREE.MOUSE.ROTATE,
+  MIDDLE: THREE.MOUSE.PAN,
+  RIGHT: THREE.MOUSE.ROTATE,
+};
 
 const transformControls = new TransformControls(camera, renderer.domElement);
 transformControls.setMode("rotate");
