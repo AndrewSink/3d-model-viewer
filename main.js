@@ -204,6 +204,52 @@ function readAsText(file) {
   });
 }
 
+const OCCT_VERSION = "0.0.23";
+const OCCT_BASE = `https://unpkg.com/occt-import-js@${OCCT_VERSION}/dist/`;
+let occtPromise = null;
+function loadOcct() {
+  if (occtPromise) return occtPromise;
+  occtPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = `${OCCT_BASE}occt-import-js.js`;
+    script.onload = () => {
+      try {
+        window
+          .occtimportjs({ locateFile: (p) => `${OCCT_BASE}${p}` })
+          .then(resolve, reject);
+      } catch (e) {
+        reject(e);
+      }
+    };
+    script.onerror = () => reject(new Error("Failed to load occt-import-js"));
+    document.head.appendChild(script);
+  });
+  return occtPromise;
+}
+
+function stepResultToGroup(result) {
+  const group = new THREE.Group();
+  for (const meshData of result.meshes) {
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(meshData.attributes.position.array);
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    if (meshData.attributes.normal) {
+      const normals = new Float32Array(meshData.attributes.normal.array);
+      geometry.setAttribute("normal", new THREE.BufferAttribute(normals, 3));
+    }
+    if (meshData.index?.array) {
+      const vertexCount = positions.length / 3;
+      const IndexArray = vertexCount > 65535 ? Uint32Array : Uint16Array;
+      geometry.setIndex(
+        new THREE.BufferAttribute(new IndexArray(meshData.index.array), 1),
+      );
+    }
+    if (!meshData.attributes.normal) geometry.computeVertexNormals();
+    group.add(new THREE.Mesh(geometry, makeMaterial()));
+  }
+  return group;
+}
+
 async function loadModel(file) {
   const ext = file.name.split(".").pop()?.toLowerCase();
   loadingBadge.classList.remove("hidden");
@@ -220,6 +266,12 @@ async function loadModel(file) {
     } else if (ext === "obj") {
       const text = await readAsText(file);
       object = new OBJLoader().parse(text);
+    } else if (ext === "step" || ext === "stp") {
+      const buffer = await readAsArrayBuffer(file);
+      const occt = await loadOcct();
+      const result = occt.ReadStepFile(new Uint8Array(buffer), null);
+      if (!result?.success) throw new Error("STEP parse failed");
+      object = stepResultToGroup(result);
     } else {
       alert(`Unsupported file type: .${ext}`);
       return;
