@@ -1,5 +1,7 @@
 # 3D Model Viewer
 
+3D Model Viewer: [https://andrewsink.github.io/3d-model-viewer/](https://andrewsink.github.io/3d-model-viewer/)
+
 A simple, browser-based viewer for common 3D model files. Open the page, drop in a model, and orbit around it. Designed for non-technical users who just want to see what an `.stl` file (or similar) looks like.
 
 A live example screenshot, the build platform, the orbit controls, and the screenshot button are all you need — no accounts, no installs, no sign-ups.
