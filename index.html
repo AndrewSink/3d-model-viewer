@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3D Model Viewer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
+      #viewport canvas {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+      }
+    </style>
+  </head>
+
+  <body class="h-screen flex flex-col bg-neutral-900 text-neutral-100 font-sans antialiased select-none">
+    <header class="h-12 flex items-center justify-center px-4 bg-neutral-900 border-b border-neutral-800 shrink-0">
+      <h1 class="text-base font-semibold tracking-wide">3D Model Viewer</h1>
+    </header>
+
+    <main class="flex-1 flex min-h-0">
+      <div id="viewport" class="flex-1 relative">
+        <div id="loading"
+          class="hidden absolute top-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-md bg-neutral-900/80 text-neutral-100 text-sm shadow">
+          Loading…
+        </div>
+        <div id="hint"
+          class="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-md bg-neutral-900/70 text-neutral-100 text-xs shadow">
+          Upload an .stl, .obj, or .ply file to begin
+        </div>
+      </div>
+
+      <aside
+        class="w-72 shrink-0 bg-neutral-100 border-l border-neutral-300 text-neutral-800 flex flex-col overflow-y-auto">
+        <section class="p-4 border-b border-neutral-300">
+          <h2 class="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2">File</h2>
+          <label for="file-input"
+            class="block w-full text-center px-3 py-2 rounded-md bg-white border border-neutral-300 hover:bg-neutral-50 cursor-pointer text-sm font-medium">
+            Choose File
+          </label>
+          <input id="file-input" type="file" accept=".stl,.obj,.ply" class="hidden" />
+          <p id="filename" class="mt-2 text-xs text-neutral-500 truncate">No file selected</p>
+        </section>
+
+        <section class="p-4 border-b border-neutral-300">
+          <h2 class="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2">Display</h2>
+          <div class="flex items-center justify-between mb-3">
+            <label for="color-input" class="text-sm">Model color</label>
+            <input id="color-input" type="color" value="#b0b6bd"
+              class="w-9 h-9 rounded border border-neutral-300 bg-white cursor-pointer" />
+          </div>
+          <label class="flex items-center gap-2 text-sm cursor-pointer">
+            <input id="wireframe-input" type="checkbox" class="accent-orange-500" />
+            Wireframe
+          </label>
+        </section>
+
+        <section class="p-4 border-b border-neutral-300">
+          <h2 class="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2">View</h2>
+          <button id="reset-view"
+            class="w-full px-3 py-2 rounded-md bg-white border border-neutral-300 hover:bg-neutral-50 text-sm font-medium">
+            Reset View
+          </button>
+          <button id="rotate-gizmo" aria-pressed="false"
+            class="w-full mt-2 px-3 py-2 rounded-md bg-white border border-neutral-300 hover:bg-neutral-50 text-sm font-medium">
+            Rotate
+          </button>
+        </section>
+
+        <section class="p-4">
+          <h2 class="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2">Export</h2>
+          <button id="screenshot"
+            class="w-full px-3 py-2 rounded-md bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold">
+            Screenshot
+          </button>
+        </section>
+      </aside>
+    </main>
+
+    <footer
+      class="h-10 shrink-0 flex items-center justify-center px-4 bg-neutral-900 border-t border-neutral-800 text-neutral-400 text-sm">
+      <a href="https://andrewsink.xyz" target="_blank" rel="noopener"
+        class="hover:text-neutral-100 transition-colors">Andrew Sink — 2026</a>
+    </footer>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+
+</html>
