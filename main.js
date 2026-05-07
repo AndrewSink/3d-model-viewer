@@ -25,8 +25,23 @@ const PLATFORM_SIZE = 200;
 const DEFAULT_CAMERA_POS = new THREE.Vector3(220, -320, 240);
 const DEFAULT_TARGET = new THREE.Vector3(0, 0, 0);
 
+function makeGradientTexture(topHex, bottomHex) {
+  const c = document.createElement("canvas");
+  c.width = 2;
+  c.height = 256;
+  const ctx = c.getContext("2d");
+  const grad = ctx.createLinearGradient(0, 0, 0, c.height);
+  grad.addColorStop(0, topHex);
+  grad.addColorStop(1, bottomHex);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, c.width, c.height);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0f172a);
+scene.background = makeGradientTexture("#dce4ed", "#b8c8d8");
 
 const camera = new THREE.PerspectiveCamera(
   45,
@@ -61,29 +76,28 @@ transformControls.setMode("rotate");
 transformControls.addEventListener("dragging-changed", (e) => {
   controls.enabled = !e.value;
 });
+const transformGizmo = transformControls.getHelper();
 let gizmoActive = false;
 
-const hemiLight = new THREE.HemisphereLight(0x8ab4f8, 0x1e293b, 0.6);
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0xc8d4de, 0.7);
 scene.add(hemiLight);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
 dirLight.position.set(5, 10, 7);
 scene.add(dirLight);
 
-const fillLight = new THREE.DirectionalLight(0x6366f1, 0.5);
+const fillLight = new THREE.DirectionalLight(0xe8f0f8, 0.35);
 fillLight.position.set(-8, 3, -5);
 scene.add(fillLight);
 
-const rimLight = new THREE.DirectionalLight(0xffffff, 0.2);
+const rimLight = new THREE.DirectionalLight(0xffffff, 0.15);
 rimLight.position.set(0, -5, -8);
 scene.add(rimLight);
 
-let grid = new THREE.GridHelper(PLATFORM_SIZE, 20, 0x334155, 0x1e293b);
+let grid = new THREE.GridHelper(PLATFORM_SIZE, 20, 0x8a9eb2, 0xaabccc);
 grid.rotation.x = Math.PI / 2;
 scene.add(grid);
 
-const axes = new THREE.AxesHelper(20);
-scene.add(axes);
 
 let currentModel = null;
 let currentColor = new THREE.Color(colorInput.value);
@@ -102,8 +116,8 @@ function disposeObject(obj) {
 function makeMaterial() {
   return new THREE.MeshPhongMaterial({
     color: currentColor.clone(),
-    specular: new THREE.Color(0x1e3a5f),
-    shininess: 55,
+    specular: new THREE.Color(0x4a7a9b),
+    shininess: 40,
     wireframe: currentWireframe,
     side: THREE.DoubleSide,
   });
@@ -122,7 +136,7 @@ function updateGrid(size) {
   const maxDim = Math.max(size.x, size.y, size.z, 50);
   const gridSize = maxDim * 3;
   const divisions = Math.round(gridSize / (maxDim / 6));
-  grid = new THREE.GridHelper(gridSize, divisions, 0x334155, 0x1e293b);
+  grid = new THREE.GridHelper(gridSize, divisions, 0x8a9eb2, 0xaabccc);
   grid.rotation.x = Math.PI / 2;
   scene.add(grid);
 }
@@ -325,8 +339,23 @@ wireframeInput.addEventListener("change", (e) => {
   }
 });
 
+const GIZMO_ON_CLASSES = ["bg-indigo-600", "text-white", "hover:bg-indigo-500"];
+const GIZMO_OFF_CLASSES = ["bg-slate-700", "hover:bg-slate-600", "text-slate-300"];
+
+function deactivateGizmo() {
+  if (!gizmoActive) return;
+  gizmoActive = false;
+  transformControls.detach();
+  scene.remove(transformGizmo);
+  rotateGizmoButton.classList.remove(...GIZMO_ON_CLASSES);
+  rotateGizmoButton.classList.add(...GIZMO_OFF_CLASSES);
+  rotateGizmoButton.setAttribute("aria-pressed", "false");
+}
+
 resetButton.addEventListener("click", () => {
+  deactivateGizmo();
   if (currentModel) {
+    currentModel.rotation.set(0, 0, 0);
     frameModel(currentModel);
   } else {
     camera.position.copy(DEFAULT_CAMERA_POS);
@@ -335,22 +364,16 @@ resetButton.addEventListener("click", () => {
   }
 });
 
-const GIZMO_ON_CLASSES = ["bg-indigo-600", "text-white", "hover:bg-indigo-500"];
-const GIZMO_OFF_CLASSES = ["bg-slate-700", "hover:bg-slate-600", "text-slate-300"];
 rotateGizmoButton.addEventListener("click", () => {
   gizmoActive = !gizmoActive;
   if (gizmoActive) {
     if (currentModel) transformControls.attach(currentModel);
-    scene.add(transformControls);
+    scene.add(transformGizmo);
     rotateGizmoButton.classList.remove(...GIZMO_OFF_CLASSES);
     rotateGizmoButton.classList.add(...GIZMO_ON_CLASSES);
     rotateGizmoButton.setAttribute("aria-pressed", "true");
   } else {
-    transformControls.detach();
-    scene.remove(transformControls);
-    rotateGizmoButton.classList.remove(...GIZMO_ON_CLASSES);
-    rotateGizmoButton.classList.add(...GIZMO_OFF_CLASSES);
-    rotateGizmoButton.setAttribute("aria-pressed", "false");
+    deactivateGizmo();
   }
 });
 

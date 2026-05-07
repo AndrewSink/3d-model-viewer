@@ -21,7 +21,7 @@
 
     <!-- Sidebar -->
     <aside id="sidebar"
-      class="w-72 shrink-0 bg-slate-800 border-r border-slate-700 flex flex-col overflow-y-auto">
+      class="collapsed w-72 shrink-0 bg-slate-800 border-r border-slate-700 flex flex-col overflow-y-auto">
 
       <div class="p-5 border-b border-slate-700">
         <h1 class="text-xl font-bold text-white">3D Model Viewer</h1>
@@ -33,7 +33,10 @@
           <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">File</h2>
           <label id="dropzone" for="file-input"
             class="block border-2 border-dashed border-slate-600 rounded-lg p-5 text-center cursor-pointer hover:border-indigo-400 transition-colors">
-            <p class="text-sm text-slate-300 font-medium">Drop file here</p>
+            <p class="text-sm text-slate-300 font-medium">
+              <span class="md:hidden">Tap or drop a file</span>
+              <span class="hidden md:inline">Drop a file here</span>
+            </p>
             <p class="text-xs text-slate-500 mt-1">.stl &middot; .obj &middot; .ply &middot; .step</p>
           </label>
           <input id="file-input" type="file" accept=".stl,.obj,.ply,.step,.stp" class="hidden" />
@@ -44,7 +47,7 @@
           <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">Display</h2>
           <div class="flex items-center justify-between mb-3">
             <label for="color-input" class="text-sm text-slate-300">Model color</label>
-            <input id="color-input" type="color" value="#b0c4d8"
+            <input id="color-input" type="color" value="#7eb5c8"
               class="w-9 h-9 rounded border border-slate-600 bg-slate-700 cursor-pointer" />
           </div>
           <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
