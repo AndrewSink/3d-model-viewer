@@ -1,0 +1,77 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+#viewport canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Dropzone drag-active state */
+#dropzone.drag-active {
+  border-color: #818cf8;
+  background-color: rgba(30, 41, 59, 0.6);
+}
+
+/* Mobile sidebar toggle tab */
+#sidebar-toggle {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 48px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-left: none;
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+  color: #94a3b8;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  transition: background-color 0.15s ease, left 0.25s ease;
+}
+
+#sidebar-toggle:hover {
+  background: #334155;
+}
+
+#sidebar-chevron {
+  transition: transform 0.25s ease;
+}
+
+/* Mobile breakpoint */
+@media (max-width: 767px) {
+  #sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 20;
+    transform: translateX(0);
+    transition: transform 0.25s ease;
+  }
+
+  #sidebar.collapsed {
+    transform: translateX(-100%);
+  }
+
+  #sidebar-toggle {
+    display: flex;
+  }
+
+  /* When sidebar is open, move toggle to its right edge */
+  #sidebar:not(.collapsed) ~ #viewport #sidebar-toggle {
+    left: 288px;
+  }
+
+  /* Flip chevron when sidebar is visible */
+  #sidebar:not(.collapsed) ~ #viewport #sidebar-chevron {
+    transform: rotate(180deg);
+  }
+}

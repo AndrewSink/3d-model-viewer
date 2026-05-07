@@ -9,6 +9,7 @@ THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
 
 const viewport = document.getElementById("viewport");
 const fileInput = document.getElementById("file-input");
+const dropzone = document.getElementById("dropzone");
 const filenameLabel = document.getElementById("filename");
 const colorInput = document.getElementById("color-input");
 const wireframeInput = document.getElementById("wireframe-input");
@@ -17,28 +18,15 @@ const rotateGizmoButton = document.getElementById("rotate-gizmo");
 const screenshotButton = document.getElementById("screenshot");
 const loadingBadge = document.getElementById("loading");
 const hint = document.getElementById("hint");
+const sidebar = document.getElementById("sidebar");
+const sidebarToggle = document.getElementById("sidebar-toggle");
 
 const PLATFORM_SIZE = 200;
 const DEFAULT_CAMERA_POS = new THREE.Vector3(220, -320, 240);
 const DEFAULT_TARGET = new THREE.Vector3(0, 0, 0);
 
-function makeGradientTexture(topHex, bottomHex) {
-  const c = document.createElement("canvas");
-  c.width = 2;
-  c.height = 256;
-  const ctx = c.getContext("2d");
-  const grad = ctx.createLinearGradient(0, 0, 0, c.height);
-  grad.addColorStop(0, topHex);
-  grad.addColorStop(1, bottomHex);
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, c.width, c.height);
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
-}
-
 const scene = new THREE.Scene();
-scene.background = makeGradientTexture("#d6dce3", "#aab1ba");
+scene.background = new THREE.Color(0x0f172a);
 
 const camera = new THREE.PerspectiveCamera(
   45,
@@ -75,35 +63,22 @@ transformControls.addEventListener("dragging-changed", (e) => {
 });
 let gizmoActive = false;
 
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0x40464d, 0.9);
-hemiLight.position.set(0, 0, 1);
+const hemiLight = new THREE.HemisphereLight(0x8ab4f8, 0x1e293b, 0.6);
 scene.add(hemiLight);
 
-const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-dirLight.position.set(150, -200, 300);
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
+dirLight.position.set(5, 10, 7);
 scene.add(dirLight);
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.15));
+const fillLight = new THREE.DirectionalLight(0x6366f1, 0.5);
+fillLight.position.set(-8, 3, -5);
+scene.add(fillLight);
 
-const platform = new THREE.Mesh(
-  new THREE.PlaneGeometry(PLATFORM_SIZE, PLATFORM_SIZE),
-  new THREE.MeshStandardMaterial({
-    color: 0xe8eaee,
-    roughness: 0.9,
-    metalness: 0.0,
-    transparent: true,
-    opacity: 0.6,
-  }),
-);
-platform.position.z = -0.01;
-scene.add(platform);
+const rimLight = new THREE.DirectionalLight(0xffffff, 0.2);
+rimLight.position.set(0, -5, -8);
+scene.add(rimLight);
 
-const grid = new THREE.GridHelper(
-  PLATFORM_SIZE,
-  20,
-  0x6b7280,
-  0xb8bdc4,
-);
+let grid = new THREE.GridHelper(PLATFORM_SIZE, 20, 0x334155, 0x1e293b);
 grid.rotation.x = Math.PI / 2;
 scene.add(grid);
 
@@ -125,12 +100,12 @@ function disposeObject(obj) {
 }
 
 function makeMaterial() {
-  return new THREE.MeshStandardMaterial({
+  return new THREE.MeshPhongMaterial({
     color: currentColor.clone(),
-    roughness: 0.55,
-    metalness: 0.1,
+    specular: new THREE.Color(0x1e3a5f),
+    shininess: 55,
     wireframe: currentWireframe,
-    flatShading: false,
+    side: THREE.DoubleSide,
   });
 }
 
@@ -140,6 +115,16 @@ function applyMaterialToModel(obj) {
       child.material = makeMaterial();
     }
   });
+}
+
+function updateGrid(size) {
+  scene.remove(grid);
+  const maxDim = Math.max(size.x, size.y, size.z, 50);
+  const gridSize = maxDim * 3;
+  const divisions = Math.round(gridSize / (maxDim / 6));
+  grid = new THREE.GridHelper(gridSize, divisions, 0x334155, 0x1e293b);
+  grid.rotation.x = Math.PI / 2;
+  scene.add(grid);
 }
 
 function frameModel(pivot) {
@@ -183,6 +168,7 @@ function setModel(obj) {
 
   scene.add(pivot);
   currentModel = pivot;
+  updateGrid(size);
   frameModel(pivot);
   hint?.classList.add("hidden");
   if (gizmoActive) transformControls.attach(pivot);
@@ -302,6 +288,21 @@ fileInput.addEventListener("change", (e) => {
   if (file) loadModel(file);
 });
 
+// Dropzone drag-and-drop
+dropzone.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  dropzone.classList.add("drag-active");
+});
+dropzone.addEventListener("dragleave", () => {
+  dropzone.classList.remove("drag-active");
+});
+dropzone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dropzone.classList.remove("drag-active");
+  const file = e.dataTransfer?.files?.[0];
+  if (file) loadModel(file);
+});
+
 colorInput.addEventListener("input", (e) => {
   currentColor.set(e.target.value);
   if (currentModel) {
@@ -334,8 +335,8 @@ resetButton.addEventListener("click", () => {
   }
 });
 
-const GIZMO_ON_CLASSES = ["bg-orange-500", "text-white", "border-orange-500"];
-const GIZMO_OFF_CLASSES = ["bg-white", "border-neutral-300", "hover:bg-neutral-50"];
+const GIZMO_ON_CLASSES = ["bg-indigo-600", "text-white", "hover:bg-indigo-500"];
+const GIZMO_OFF_CLASSES = ["bg-slate-700", "hover:bg-slate-600", "text-slate-300"];
 rotateGizmoButton.addEventListener("click", () => {
   gizmoActive = !gizmoActive;
   if (gizmoActive) {
@@ -362,6 +363,11 @@ screenshotButton.addEventListener("click", () => {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+});
+
+// Mobile sidebar toggle
+sidebarToggle.addEventListener("click", () => {
+  sidebar.classList.toggle("collapsed");
 });
 
 const resizeObserver = new ResizeObserver(() => {
