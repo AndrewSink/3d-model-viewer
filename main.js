@@ -365,15 +365,15 @@ resetButton.addEventListener("click", () => {
 });
 
 rotateGizmoButton.addEventListener("click", () => {
-  gizmoActive = !gizmoActive;
   if (gizmoActive) {
+    deactivateGizmo();
+  } else {
+    gizmoActive = true;
     if (currentModel) transformControls.attach(currentModel);
     scene.add(transformGizmo);
     rotateGizmoButton.classList.remove(...GIZMO_OFF_CLASSES);
     rotateGizmoButton.classList.add(...GIZMO_ON_CLASSES);
     rotateGizmoButton.setAttribute("aria-pressed", "true");
-  } else {
-    deactivateGizmo();
   }
 });
 
